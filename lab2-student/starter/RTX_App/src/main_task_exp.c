@@ -59,10 +59,10 @@ struct func_info g_task_map[NUM_FNAMES] =
   {init,  "init" }
 };
 
-/*--------------------------- task1 ----------------------------------------------------------*/
-/* test that a task can allocate a fixed size of memory                                       */
+/*--------------------------- task1 ----------------------------*/
+/* test that a task can allocate a fixed size of memory */
 /* tests a task will be blocked if there is no memory available when os_mem_alloc() is called */
-/*--------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 __task void task1(void) {
 	int i = 0;
 	_init_box(mpool, sizeof(mpool), 20);
@@ -81,7 +81,7 @@ __task void task1(void) {
 	os_tsk_delete_self();
 }
 
-/*--------------------------- task2 ------------------------------*/
+/*--------------------------- task2 ----------------------------*/
 /* tests that tasks interleave correctly                          */
 /* task2 must free memory when task1 gets blocked                 */
 /*----------------------------------------------------------------*/
@@ -102,11 +102,10 @@ __task void task2(void) {
 	os_tsk_delete_self();
 }
 
-/*--------------------------- task3 ----------------------------------*/
-/* asks for resources from the stack when stack is full, has to wait  */
-/* for stack to free up memory (done by task 2)                       */
-/* assumed to have higher priority than task 4                        */ 
-/*--------------------------------------------------------------------*/
+/*--------------------------- task3 ----------------------------*/
+/* tests that tasks interleave correctly                          */
+/* task1 must free memory when task1 gets blocked                 */
+/*----------------------------------------------------------------*/
 __task void task3(void) {
 	printf("--- Allocating high priority task3 \n");
 	mem = os_mem_alloc(mpool);
@@ -114,12 +113,6 @@ __task void task3(void) {
 	printf("--- Done task3 \n");
 	os_tsk_delete_self();
 }
-
-/*--------------------------- task4 -----------------------------------*/
-/* asks for resources from the stack when stack is full, has to wait   */
-/* for stack to free up memory (done by task 2)                        */
-/* assumed to have lower priority than task 3                          */
-/*---------------------------------------------------------------------*/
 
 __task void task4(void) {
 	printf("---- Allocating low priority task4 \n");
@@ -138,6 +131,8 @@ __task void init(void) {
 	os_mut_wait(g_mut_uart, 0xFFFF);
 	os_mut_release(g_mut_uart);
 
+	printf("TESTING: \n 1) A task can allocate a fixed size of memory \n 2) A task will get blocked if there is no memory available when os_mem_alloc() is called \n 3) A blocked memory task will be resumed once enough memory is available in the system \n \n");
+	
 	g_tid = os_tsk_create(task1, 5);
 	os_mut_wait(g_mut_uart, 0xFFFF);
 	os_mut_release(g_mut_uart);
@@ -146,6 +141,7 @@ __task void init(void) {
 	os_mut_wait(g_mut_uart, 0xFFFF);
 	os_mut_release(g_mut_uart);
 	
+	printf("\n TESTING: \n 4) Creates multiple tasks with different priorities, all blocked and waiting for memory \n 5) When memory becomes available, tests that the highest priority task waiting the longest gets the memory first \n\n");
 	g_tid = os_tsk_create(task3, 3);
 	os_mut_wait(g_mut_uart, 0xFFFF);
 	os_mut_release(g_mut_uart);

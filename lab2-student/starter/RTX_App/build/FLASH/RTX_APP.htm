@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\build\FLASH\RTX_APP.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\build\FLASH\RTX_APP.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5.02 [Build 28]: Last Updated: Wed Oct 18 23:11:04 2017
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5.02 [Build 28]: Last Updated: Wed Oct 18 23:41:48 2017
 <BR><P>
 <H3>Maximum Stack Usage =        136 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -589,7 +589,12 @@ Global Symbols
 <BR>[Address Reference Count : 2]<UL><LI> main_task_exp.o(.data)
 <LI> main_task_exp.o(.text)
 </UL>
-<P><STRONG><a name="[42]"></a>init</STRONG> (Thumb, 276 bytes, Stack size 0 bytes, main_task_exp.o(.text))
+<P><STRONG><a name="[42]"></a>init</STRONG> (Thumb, 290 bytes, Stack size 0 bytes, main_task_exp.o(.text))
+<BR><BR>[Stack]<UL><LI>Max Depth = 128 + Unknown Stack Size
+<LI>Call Chain = init &rArr; __2printf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
+</UL>
+<BR>[Calls]<UL><LI><a href="#[69]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2printf
+</UL>
 <BR>[Address Reference Count : 2]<UL><LI> main_task_exp.o(.data)
 <LI> main_task_exp.o(.text)
 </UL>
@@ -626,6 +631,7 @@ Global Symbols
 <BR>[Calls]<UL><LI><a href="#[70]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_char_file
 </UL>
 <BR>[Called By]<UL><LI><a href="#[55]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
+<LI><a href="#[42]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;init
 <LI><a href="#[41]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task4
 <LI><a href="#[40]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task3
 <LI><a href="#[3f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task2
