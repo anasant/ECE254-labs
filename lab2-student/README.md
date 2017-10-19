@@ -4,16 +4,13 @@ Anastasia Santasheva, Keren Chandran
 
 This folder contains the solution to 2.4.2 tasks from the University of Waterloo ECE 254 Lab manual. The main file consists of five tasks, with their behaviours outlined below:
 
-Task 1: Gets the number of running tasks
+Task 1: test that a task can allocate a fixed size of memory, tests a task will be blocked if there is no memory available when os_mem_alloc() is called 
 
-Task 2: Prints "Hello from Test Task 2" and waits 100ms
+Task 2: frees up memory in the stack, tests interleaving between tasks
 
-Task 3: Prints "Hello from Test Task 3" and waits 200ms
+Task 3: asks for resources from the stack when stack is full, has to wait for stack to free up memory (done by task 2); initialized with higher priority than task 4
 
-Task 4: Prints "Hello from Test Task 4" at an interval of 20ms.
-
-Task 5: Outputs task details, specifically TID, name, priority and stack usage in a tabular format and waits 100ms
-
+Task 4: asks for resources from the stack when stack is full, has to wait for stack to free up memory (done by task 2); initialized with lower priority than task 3
 
 The file rt_Task_ext.c contains the definition of two functions:
 
