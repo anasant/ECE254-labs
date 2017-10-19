@@ -37,7 +37,6 @@
 /* Variables */
 extern struct OS_TSK os_tsk;
 extern struct OS_TCB os_idle_TCB;
-extern struct OS_XCB os_wait_mem;
 
 /* Functions */
 extern void      rt_switch_req (P_TCB p_new);
