@@ -28,3 +28,7 @@ rt_free_box_s - Frees memory pointed by ptr, it will unblock a task that is wait
 rt_alloc_box_s - Allocates memory in a box, or blocks allocation and waits until memory is freed up.
 
 Instead of starting from Lab 2's starter code provided by the professor, the old Lab 1 code that was previously handed in was used for development. This is because implementations of os_tsk_count_get and os_tsk_get could be used in debugging memory management implemented in Lab 2. 
+
+Notes: 
+- we need to use WAIT_MEM somewhere but not sure where yet, probably must be set somewhere in rt_MemBox_ext.c
+- 

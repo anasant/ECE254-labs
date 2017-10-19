@@ -294,6 +294,9 @@ void rt_sys_init (FUNCP first_task, U32 prio_stksz, void *stk) {
   os_dly.p_dlnk  = NULL;
   os_dly.p_blnk  = NULL;
   os_dly.delta_time = 0;
+  /* Set up queue list: initially empty - Ana added */ 
+  os_wait_mem.cb_type = HCB;
+  os_wait_mem.p_lnk   = NULL;
 
   /* Fix SP and systemvariables to assume idle task is running  */
   /* Transform main program into idle task by assuming idle TCB */

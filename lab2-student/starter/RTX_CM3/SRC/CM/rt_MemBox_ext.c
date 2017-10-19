@@ -21,14 +21,15 @@
 #include "rt_HAL_CM.h"
 #include "rt_List.h"
 #include "rt_Task.h"       /* added in ECE254 lab keil_proc */ 
-#include "rt_MemBox_ext.h" /* added in ECE254 lab keil_proc */   
+#include "rt_MemBox_ext.h" /* added in ECE254 lab keil_proc */  
+#include <stdio.h>
 
 /* ECE254 Lab Comment: You may need to include more header files */
 
 /*----------------------------------------------------------------------------
  *      Global Variables
  *---------------------------------------------------------------------------*/
-	struct OS_XCB queue;
+struct OS_XCB os_wait_mem;
 
 /*----------------------------------------------------------------------------
  *      Global Functions
@@ -47,15 +48,14 @@ void *rt_alloc_box_s (void *p_mpool) {
 	void *ptr;
 	P_TCB p_task;
 	int task_id;
-	
 	ptr = rt_alloc_box(p_mpool);
 	
-	if (ptr == NULL) {
-		task_id = rt_tsk_self();
+	if (ptr == NULL) { // if pointer is null
+		task_id = rt_tsk_self(); // get current task id
 		p_task = os_active_TCB[task_id - 1];
-		rt_put_prio(&queue, p_task);
+		rt_put_prio(&os_wait_mem, p_task);
 		rt_block(0xffff, 10);
-		return NULL;
+		return NULL; // maybe this should return WAIT_MEM ?
 	}
 	
 	return ptr;
@@ -74,8 +74,8 @@ OS_RESULT rt_free_box_s (void *p_mpool, void *box) {
 	P_TCB headTask;
 	
 	if (mem == 0) {
-		if (&queue.p_lnk != NULL) {
-			headTask = rt_get_first(&queue);
+		if (&os_wait_mem.p_lnk != NULL) {
+			headTask = rt_get_first(&os_wait_mem);
 			headTask->ret_val = (U32) box;
 			rt_dispatch(headTask);
 		} else {

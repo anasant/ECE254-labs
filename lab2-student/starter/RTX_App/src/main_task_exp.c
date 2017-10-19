@@ -14,6 +14,14 @@
 
 #define NUM_FNAMES 7
 
+const int BLOCK_NUM = 32;
+const int BLOCK_BYTES = 20;
+const int MAX_SIZE = BLOCK_NUM + 1;
+int last_freed = BLOCK_NUM - 1;
+
+/* Reserves memory for 32 blocks of 20-bytes. */
+_declare_box(mpool, BLOCK_BYTES, BLOCK_NUM);
+
 struct func_info {
   void (*p)();      /* function pointer */
   char name[16];    /* name of the function */
@@ -24,11 +32,14 @@ __task void task1(void);
 __task void task2(void);
 __task void task3(void);
 __task void task4(void);
-__task void task5(void);
 __task void init (void);
  
 char *state2str(unsigned char state, char *str);
 char *fp2name(void (*p)(), char *str);
+
+U8 *mem;
+int mem_block_count;
+U8 *allocated_memory[BLOCK_NUM];
 
 OS_MUT g_mut_uart;
 OS_TID g_tid = 255;
@@ -45,121 +56,103 @@ struct func_info g_task_map[NUM_FNAMES] =
   {task2, "task2"},   \
   {task3, "task3"},   \
   {task4, "task4"},   \
-  {task5, "task5"},   \
   {init,  "init" }
 };
 
-/*--------------------------- task1 -----------------------------------*/
-/* count the number of tasks running in the system                     */
+/*--------------------------- task1 ----------------------------*/
+/* test that a task can allocate a fixed size of memory */
+/* tests a task will be blocked if there is no memory available when os_mem_alloc() is called */
 /*---------------------------------------------------------------------*/
 __task void task1(void) {
-	task_counter = os_tsk_count_get();
-	printf("There are: %d tasks running\n", task_counter);
-	os_dly_wait(100);
+	int i = 0;
+	_init_box(mpool, sizeof(mpool), 20);
+	for (i; i <= MAX_SIZE; i++) {
+		mem_block_count++;
+		if (mem_block_count == MAX_SIZE) {
+			printf("- Reserving %d...\n", MAX_SIZE);
+			mem = os_mem_alloc(mpool);
+			printf("- Reserved %d. \n", MAX_SIZE);
+		} else {
+			mem = os_mem_alloc(mpool);
+		}
+		allocated_memory[i] = mem;
+	}
+	printf("- Done task1 \n");
 	os_tsk_delete_self();
 }
 
-/*--------------------------- task2 - task5 ----------------------------*/
-/* test tasks for checking implementation                               */
-/*---------------------------------------------------------------------*/
+/*--------------------------- task2 ----------------------------*/
+/* tests that tasks interleave correctly                          */
+/* task2 must free memory when task1 gets blocked                 */
+/*----------------------------------------------------------------*/
 __task void task2(void) {
-	printf("Hello from Test Task 2\n");
-	os_dly_wait(100);
+	OS_RESULT result;
+	printf("-- Freeing... (task 2)\n");
+	
+	result = os_mem_free(mpool, allocated_memory[last_freed]);
+	last_freed--;
+
+	if (result == OS_R_OK) {
+		printf("-- Freed memory successfully! \n");
+	} else {
+		printf("-- Freeing memory failed! \n");
+	}
+
+	printf("-- Done task2 \n");
 	os_tsk_delete_self();
 }
 
+/*--------------------------- task3 ----------------------------*/
+/* tests that tasks interleave correctly                          */
+/* task1 must free memory when task1 gets blocked                 */
+/*----------------------------------------------------------------*/
 __task void task3(void) {
-	printf("Hello from Test Task 3\n");
-	os_dly_wait(200);
+	printf("--- Allocating high priority task3 \n");
+	mem = os_mem_alloc(mpool);
+	printf("--- Allocated high priority task3 \n");
+	printf("--- Done task3 \n");
 	os_tsk_delete_self();
 }
 
 __task void task4(void) {
-	os_itv_set (20);
-	for (;;) {
-	  	os_itv_wait ();
-		printf("Hello from Test Task 4\n");
-	}
-}
-
-/*--------------------------- task5 -----------------------------------*/
-/* checking states of all tasks in the system                          */
-/*---------------------------------------------------------------------*/
-__task void task5(void) {
-	U8 i=1;
-	RL_TASK_INFO task_info;
-	
-	os_mut_wait(g_mut_uart, 0xFFFF);
-	printf("TID\tNAME\t\tPRIO\tSTATE   \t%%STACK\n");
-	os_mut_release(g_mut_uart);
-    
-	for(i = 0; i < task_counter; i++) { 
-		if (os_tsk_get(i+1, &task_info) == OS_R_OK) {
-			os_mut_wait(g_mut_uart, 0xFFFF);  
-			printf("%d\t%s\t\t%d\t%s\t%d%%\n", \
-			       task_info.task_id, \
-			       fp2name(task_info.ptask, g_tsk_name), \
-			       task_info.prio, \
-			       state2str(task_info.state, g_str),  \
-			       task_info.stack_usage);
-			os_mut_release(g_mut_uart);
-		} 
-	}
-    
-	if (os_tsk_get(0xFF, &task_info) == OS_R_OK) {
-		printf("PRINTING HERE");
-		os_mut_wait(g_mut_uart, 0xFFFF);  
-		printf("%d\t%s\t\t%d\t%s\t%d%%\n", \
-		       task_info.task_id, \
-		       fp2name(task_info.ptask, g_tsk_name), \
-		       task_info.prio, \
-		       state2str(task_info.state, g_str),  \
-		       task_info.stack_usage);
-		os_mut_release(g_mut_uart);
-	} 
-  os_dly_wait(200);
+	printf("---- Allocating low priority task4 \n");
+	mem = os_mem_alloc(mpool);
+	printf("---- Allocated low priority task4 \n");
+	printf("---- Done task4 \n");
+	os_tsk_delete_self();
 }
 
 /*--------------------------- init ------------------------------------*/
 /* initialize system resources and create other tasks                  */
-/*---------------------------------------------------------------------*/
+/*----- ----------------------------------------------------------------*/
 __task void init(void) {
 	os_mut_init(&g_mut_uart);
   
 	os_mut_wait(g_mut_uart, 0xFFFF);
-	printf("init: TID = %d\n", os_tsk_self());
 	os_mut_release(g_mut_uart);
-  
-	g_tid = os_tsk_create(task1, 1); 
+
+	g_tid = os_tsk_create(task1, 5);
 	os_mut_wait(g_mut_uart, 0xFFFF);
-	printf("init: created task1 with TID %d\n", g_tid);
 	os_mut_release(g_mut_uart);
-	
-	/* display number of tasks first time */
-	g_tid = os_tsk_create(task5, 1);
+
+	g_tid = os_tsk_create(task2, 4);
 	os_mut_wait(g_mut_uart, 0xFFFF);
-	printf("init: created task5 with TID %d\n", g_tid);
-	os_mut_release(g_mut_uart);
-  
-	g_tid = os_tsk_create(task2, 1); 
-	os_mut_wait(g_mut_uart, 0xFFFF);
-	printf("init: created task2 with TID %d\n", g_tid);
 	os_mut_release(g_mut_uart);
 	
-	g_tid = os_tsk_create(task3, 2);
+	g_tid = os_tsk_create(task3, 3);
 	os_mut_wait(g_mut_uart, 0xFFFF);
-	printf("init: created task3 with TID %d\n", g_tid);
 	os_mut_release(g_mut_uart);
 	
-	g_tid = os_tsk_create(task4, 3);
+	g_tid = os_tsk_create(task4, 2);
 	os_mut_wait(g_mut_uart, 0xFFFF);
-	printf("init: created task4 with TID %d\n", g_tid);
 	os_mut_release(g_mut_uart);
 	
-	/* display number of tasks second time */
-	g_tid = os_tsk_create(task5, 1);
+	g_tid = os_tsk_create(task2, 1);
 	os_mut_wait(g_mut_uart, 0xFFFF);
-	printf("init: created task5 with TID %d\n", g_tid);
+	os_mut_release(g_mut_uart);
+	
+	g_tid = os_tsk_create(task2, 1);
+	os_mut_wait(g_mut_uart, 0xFFFF);
 	os_mut_release(g_mut_uart);
 
 	os_tsk_delete_self(); /* task MUST delete itself before exiting */
@@ -203,6 +196,9 @@ char *state2str(unsigned char state, char *str) {
 		break;
 	case WAIT_MUT:
 		strcpy(str, "WAIT_MUT");
+		break;
+	case WAIT_MEM:
+		strcpy(str, "WAIT_MEM");
 		break;
 	default:
 		strcpy(str, "UNKNOWN");    
