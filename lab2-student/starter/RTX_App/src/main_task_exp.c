@@ -152,6 +152,10 @@ __task void init(void) {
 	g_tid = os_tsk_create(task2, 1);
 	os_mut_wait(g_mut_uart, 0xFFFF);
 	os_mut_release(g_mut_uart);
+	
+	g_tid = os_tsk_create(task2, 1);
+	os_mut_wait(g_mut_uart, 0xFFFF);
+	os_mut_release(g_mut_uart);
 
 	os_tsk_delete_self(); /* task MUST delete itself before exiting */
 }

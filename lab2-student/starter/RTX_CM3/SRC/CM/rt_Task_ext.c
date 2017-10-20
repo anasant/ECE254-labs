@@ -49,7 +49,7 @@ int rt_tsk_count_get (void) {
 /*--------------------------- rt_tsk_get ------------------------------------*/
 /* added in ECE254 lab keil_proc */
 OS_RESULT rt_tsk_get (OS_TID task_id, RL_TASK_INFO *p_task_info) {
-	P_TCB current_task, task = 0;
+	P_TCB task = 0;
 	U32 sizeInAddr = (U16)os_stackinfo;
 	
 	task = os_active_TCB[task_id - 1];
