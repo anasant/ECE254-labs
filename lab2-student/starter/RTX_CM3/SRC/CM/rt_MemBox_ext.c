@@ -51,12 +51,12 @@ void *rt_alloc_box_s (void *p_mpool) {
 	int task_id;
 	ptr = rt_alloc_box(p_mpool);
 	
-	if (ptr == NULL) { // if pointer is null
-		task_id = rt_tsk_self(); // get current task id
+	if (ptr == NULL) {
+		task_id = rt_tsk_self();
 		p_task = os_active_TCB[task_id - 1];
 		rt_put_prio(&os_wait_mem, p_task);
 		rt_block(0xffff, WAIT_MEM);
-		return NULL; // maybe this should return WAIT_MEM ?
+		return NULL;
 	}
 	
 	return ptr;
