@@ -1,0 +1,63 @@
+Lab 2 Answers to Provided Questions
+October 20, 2017
+Anastasia Santasheva
+Keren Chandran
+
+1. Read the RTX Library Reference in the Keil IDE Help and answer the following questions: 
+
+a) In an RTX application, how do you declare a memory pool named mympool that has 20 blocks of memory with block size of 12 bytes
+
+#include <rtl.h>
+/* Reserve a memory for 20 blocks of 12-bytes. */
+_declare_box(mympool, 12, 20);
+
+b) Write one line of code to initialize the “mympool”
+
+  _init_box (mympool, sizeof (mympool), 12);
+
+c) What is the corresponding kernel function of _alloc_box()?
+
+The corresponding kernel function of _alloc_box is rt_alloc_box(void *box_mem);
+
+d) What is the corresponding kernel function of _free_box()?
+
+The corresponding kernel function of _free_box() is rt_free_box (void *box_mem);
+
+
+2. Read the rt_TypeDef.h file. What is the purpose of ret_val in the struct OS_TCB?
+Ret_val is a U32 of the return value upon completion of a wait. This can include OS_R_OK or OS_R_NOK.
+
+
+3. Read the rt_List.c file and answer the following questions: 
+
+a) What does the rt_put_prio() function do?
+ The rt_put_prio() function puts a task identified with "p_task" into list ordered by priority. In this function,  "p_CB" points to head of list. The list always has an element at end of it with a priority less than "p_task->prio". 
+
+b) What does the rt_get_first() function do?
+ The rt_get_first() function gets the task at the head of the list. The head task is the task with the highest priority. In this function, "p_CB" points to head of list.
+
+
+4. Read the rt_Task.c file and answer the following questions: 
+a) What does the rt_block() function do?
+The rt_block() function blocks the running task and chooses the next ready task using rt_get_first().
+
+b) What does the rt_dispatch() function do?
+The rt_dispatch() function dispatches the next task, if a next task is identified, or dispatches the highest ready task. 
+
+
+5. How to set the return value of a function becomes a bit tricky when context switching is involved. One such example is the os_mbx_wait() function. This function will return OS_R_MBX if the task has waited until a message was put in the mailbox (ie. the task was blocked to wait for a message to arrive and then unblocked when the message arrives). Read the rt_Mailbox.c file and find the lines where the return value of OS_R_MBX is set. Why does the corresponding kernel function rt_mbx_wait() not have a line to set the return value of OS_R_MBX? You may skip the code in functions isr_mbx_receive() and rt_mbx_psh() for the purpose of completing this assignment. 
+
+A return value of OS_R_MBX is set in rt_mbx_send() on line 54:
+
+p_TCB->ret_val = OS_R_MBX;
+
+The function rt_mbx_wait() does not have a line to set a return value of OS_R_MBX because the rt_mbx_send() function is what sets this value. If rt_mbx_wait() does not receive a message, it calls rt_block() and waits for a defined period of time. If no message is received during this period of time, rt_mbx_wait() will return OS_R_TMO (timeout response) instead. 
+If rt_mbx_wait() does receive a message, it will process the message and return OS_R_OK (ok response). 
+
+
+6. To block a task, you will need to create a queue that the blocked tasks can stay in. There are two global queues in the kernel, and they are called os_rdy and os_dly. What data structure do these two queues use?
+
+Both os_rdy and os_dly are linked lists of type OS_XCB struct.
+
+
+

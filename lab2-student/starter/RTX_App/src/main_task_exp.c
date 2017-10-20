@@ -44,7 +44,6 @@ U8 *allocated_memory[BLOCK_NUM];
 OS_MUT g_mut_uart;
 OS_TID g_tid = 255;
 
-int  task_counter = 0;
 char g_str[16];
 char g_tsk_name[16];
 
@@ -97,7 +96,7 @@ __task void task2(void) {
 	} else {
 		printf("-- Freeing memory failed! \n");
 	}
-
+	
 	printf("-- Done task2 \n");
 	os_tsk_delete_self();
 }
@@ -147,10 +146,6 @@ __task void init(void) {
 	os_mut_release(g_mut_uart);
 	
 	g_tid = os_tsk_create(task4, 2);
-	os_mut_wait(g_mut_uart, 0xFFFF);
-	os_mut_release(g_mut_uart);
-	
-	g_tid = os_tsk_create(task2, 1);
 	os_mut_wait(g_mut_uart, 0xFFFF);
 	os_mut_release(g_mut_uart);
 	

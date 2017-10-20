@@ -1,1 +1,40 @@
-Write test task specification in this file.
+Lab 2 memory management, in particular, implementation of os_mem_alloc() and os_mem_free() is tested by implementing four tasks with different priorities.
+
+Task 1, priority 5: test that a task can allocate a fixed size of memory, tests a task will be blocked if there is no memory available when os_mem_alloc() is called 
+
+Task 2, priority 4 and later priority 1: frees up memory in the stack, tests interleaving between tasks
+
+Task 3, priority 3: asks for resources from the stack when stack is full, has to wait for stack to free up memory (done by task 2); initialized with higher priority than task 4
+
+Task 4, priority 2: asks for resources from the stack when stack is full, has to wait for stack to free up memory (done by task 2); initialized with lower priority than task 3
+
+The expected output in UART#1 from implementing these tasks is:
+
+```
+Calling os_sys_init()...
+TESTING: 
+ 1) A task can allocate a fixed size of memory 
+ 2) A task will get blocked if there is no memory available when os_mem_alloc() is called 
+ 3) A blocked memory task will be resumed once enough memory is available in the system 
+ 
+- Reserving 33...
+-- Freeing... (task 2)
+- Reserved 33. 
+- Done task1 
+-- Freed memory successfully! 
+-- Done task2 
+
+ TESTING: 
+ 4) Creates multiple tasks with different priorities, all blocked and waiting for memory 
+ 5) When memory becomes available, tests that the highest priority task waiting the longest gets the memory first 
+
+--- Allocating high priority task3 
+---- Allocating low priority task4 
+-- Freeing... (task 2)
+--- Allocated high priority task3 
+--- Done task3 
+-- Freed memory successfully! 
+-- Done task2 
+```
+
+This output means that the program has executed as expected, and implementations of functions in rt_Membox_ext work successfully as tested.

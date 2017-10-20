@@ -22,6 +22,7 @@
 #include "rt_List.h"
 #include "rt_Task.h"       /* added in ECE254 lab keil_proc */ 
 #include "rt_MemBox_ext.h" /* added in ECE254 lab keil_proc */  
+#include "rt_Task_ext.h"
 #include <stdio.h>
 
 /* ECE254 Lab Comment: You may need to include more header files */
@@ -54,7 +55,7 @@ void *rt_alloc_box_s (void *p_mpool) {
 		task_id = rt_tsk_self(); // get current task id
 		p_task = os_active_TCB[task_id - 1];
 		rt_put_prio(&os_wait_mem, p_task);
-		rt_block(0xffff, 10);
+		rt_block(0xffff, WAIT_MEM);
 		return NULL; // maybe this should return WAIT_MEM ?
 	}
 	
