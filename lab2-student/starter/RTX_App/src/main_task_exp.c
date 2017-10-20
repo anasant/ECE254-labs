@@ -103,7 +103,7 @@ __task void task2(void) {
 
 /*--------------------------- task3 ----------------------------*/
 /* tests that tasks interleave correctly                          */
-/* task1 must free memory when task1 gets blocked                 */
+/* task2 must free memory when task3 gets blocked                 */
 /*----------------------------------------------------------------*/
 __task void task3(void) {
 	printf("--- Allocating high priority task3 \n");
@@ -113,6 +113,10 @@ __task void task3(void) {
 	os_tsk_delete_self();
 }
 
+/*--------------------------- task4 ----------------------------*/
+/* tests that tasks interleave correctly                          */
+/* task2 must free memory when task4 gets blocked                 */
+/*----------------------------------------------------------------*/
 __task void task4(void) {
 	printf("---- Allocating low priority task4 \n");
 	mem = os_mem_alloc(mpool);
