@@ -40,6 +40,11 @@ TESTING:
 --- Done task3 
 -- Freed memory successfully! 
 -- Done task2 
+-- Freeing... (task 2)
+---- Allocated low priority task4 
+---- Done task4 
+-- Freed memory successfully! 
+-- Done task2 
 ```
 
 This output means that the program has executed as expected, and implementations of functions in rt_Membox_ext work successfully as tested.
