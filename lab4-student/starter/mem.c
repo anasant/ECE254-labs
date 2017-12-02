@@ -1,8 +1,8 @@
 /**
  * @file memory.c
  * @brief: ECE254 Lab: memory allocation algorithm comparison template file
- * @author: 
- * @date: 2015-11-20
+ * @author: Anastasia Santasheva
+ * @date: 2017-12-02
  */
 
 /* includes */
@@ -19,14 +19,10 @@ node* head_bf;
 //                  Initialization                   //
 //---------------------------------------------------//
 int memory_init(size_t size, node** head) {
-	printf("The size of a struct node is: %lu\n", sizeof(node));
-	
 	if (size <= (sizeof(node) + 4)) {
-		return -1; // insufficient size provided
+		return -1; // insufficient size
 	}
 	*head = malloc(size);
-
-	printf("The start of the head node is: %d\n", head);
 
 	if (!head) {
 		return -1; // return if malloc failed
