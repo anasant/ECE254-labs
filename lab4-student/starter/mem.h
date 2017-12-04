@@ -17,6 +17,9 @@ typedef struct node_struct {
 	struct node_struct* previous;  // pointer to the previous node
 } node;
 
+extern node* head_wf;
+extern node* head_bf;
+
 int size_of_struct_node;
 /* memory initializers */
 int best_fit_memory_init(size_t size);

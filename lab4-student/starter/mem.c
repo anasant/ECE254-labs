@@ -48,12 +48,16 @@ int worst_fit_memory_init(size_t size) {
 //                  Allocation                       //
 //---------------------------------------------------//
 void *memory_alloc(size_t size, node* head, int best_fit) {
+	if(size % 4 != 0) {
+		size += (4 - (size % 4));
+	}
+
 	size_t best_size = best_fit ? INT_MAX : 0; // for best fit, size should be smaller  than this BUT larger than size; for worst_fit, size should be bigger than this AND larger than size
 	node* best = NULL;
 
 	do {
 		// traverses the linked list and finds the best node to use for each algorithm
-		if((best_fit && head->size < best_size && head->size > size) || (!best_fit && head->size > best_size && head->size > size)) { // works better based on the best fit / worst fit model, based on the boolean worst_fit
+		if (!head->is_allocated && ((best_fit && head->size < best_size && head->size >= size) || (!best_fit && head->size > best_size && head->size >= size))) { // works better based on the best fit / worst fit model, based on the boolean worst_fit
 			best_size = head->size;
 			best = head;
 		}
@@ -73,19 +77,20 @@ void *memory_alloc(size_t size, node* head, int best_fit) {
 	best->is_allocated = 1;
 	size_t size_left = best_size - size;
 	if (size_left >= sizeof(node) + 4) { // the minimum possible allocation for the leftover is 4 bytes; otherwise not enough space
-		best->next = best + size + sizeof(node); //TODO: fix pointer arithmetic
+		node* old_next = best->next;
+		best->next = (node*) (((void*) best) + size + sizeof(node)); //TODO: fix pointer arithmetic????
 		best->size = size;
 
 		(best->next)->is_allocated = 0;
 		(best->next)->size = size_left - sizeof(node);
-		(best->next)->next = best->next->next;
+		(best->next)->next = old_next;
 		(best->next)->previous = best;
 
-		if (best->next->next) {
-			(best->next->next)->previous = best->next;
+		if (old_next) {
+			old_next->previous = best->next;
 		}
 	}
-	return best + sizeof(node);
+	return ((void*) best) + sizeof(node);
 }
 
 void *best_fit_alloc(size_t size) {
@@ -101,7 +106,7 @@ void *worst_fit_alloc(size_t size) {
 //---------------------------------------------------//
 void mem_dealloc(void *ptr) {
 	// makes sure to get the node pointer of the header and not the memory
-	node* current = (node*) ((size_t)ptr - sizeof(node));
+	node* current = (node*) ((void*)ptr - sizeof(node));
 	current->is_allocated = 0; // also 1) nothing is free around me
 	
 	// gets the previous and next node
@@ -121,14 +126,19 @@ void mem_dealloc(void *ptr) {
 	else if (!previous_free && next_free) {
 		current->size += current->next->size + sizeof(node);
 		current->next = current->next->next;
-		current->next->previous = current;
+		if (current->next) {
+			current->next->previous = current;
+		}
+
 	}
 	// 4) both previous and next spaces are free
 	else if (previous_free && next_free) {
 		node* prev = current->previous; // will hold all the memory
 		prev->size += current->size + current->next->size + 2*sizeof(node);
 		prev->next = current->next->next;
-		current->next->next->previous = prev;
+		if (current->next->next) {
+			current->next->next->previous = prev;
+		}
 	}	
 
 	return;
