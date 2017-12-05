@@ -244,7 +244,7 @@ void test_allocation(int algo) {
 }
 
 void test_efficiency(int algo) {
-	srand(12345);
+	srand(123454322);
 	void** ptrs = calloc(200, sizeof(void*));
 	node* head = mem_head(algo);
 
@@ -254,7 +254,7 @@ void test_efficiency(int algo) {
 			for(int j = 0; j < 200; j++) {
 				int index = rand() % 200;
 				if(!ptrs[index]) {
-					ptrs[index] = mem_alloc_test(rand() % 192, algo); // if it fails, it's ok
+					ptrs[index] = mem_alloc_test(rand() % 96, algo); // if it fails, it's ok
 					break;
 				}
 			}
